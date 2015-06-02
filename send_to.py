@@ -47,17 +47,17 @@ def find_regulation_files(stub_base, regulation):
     notice_names = None
 
     # Get the regulation/ JSON and notice numbers
-    logger.info("getting files for regulation {}...".format(regulation))
+    logger.info("getting files for regulation {0}...".format(regulation))
     regulation_base = os.path.join(stub_base, 'regulation', regulation)
     if not os.path.isdir(regulation_base):
-        logger.error("Can't find regulation JSON for {} at {}".format(regulation, regulation_base))
+        logger.error("Can't find regulation JSON for {0} at {1}".format(regulation, regulation_base))
         return []
     for dirname, subdirs, files in os.walk(regulation_base):
         notice_names = files
         regulation_files.extend([os.path.join(dirname, f) for f in files])
 
     # Get notice JSON
-    logger.info("getting notice files for regulation {}...".format(regulation))
+    logger.info("getting notice files for regulation {0}...".format(regulation))
     for dirname, subdirs, files in os.walk(os.path.join(stub_base, 'notice')):
         # Notices are not stored in a regulation-part-number
         # subdirectory. Use notice_names, from above, to just grab the
@@ -66,7 +66,7 @@ def find_regulation_files(stub_base, regulation):
         regulation_files.extend(notice_files)
 
     # Get layer JSON
-    logger.info("getting layer files for regulation {}...".format(regulation))
+    logger.info("getting layer files for regulation {0}...".format(regulation))
     for dirname, subdirs, files in os.walk(os.path.join(stub_base, 'layer')):
         # For layers, dig into each subdirectory of the layer path until
         # we find one with our regulation part number.
@@ -75,7 +75,7 @@ def find_regulation_files(stub_base, regulation):
             regulation_files.extend(layer_files)
 
     # Get diff JSON
-    logger.info("getting diff files for regulation {}...".format(regulation))
+    logger.info("getting diff files for regulation {0}...".format(regulation))
     for dirname, subdirs, files in os.walk(os.path.join(stub_base, 'diff', regulation)):
         # For diffs, each regulation directory has a notice directory
         # with json files corrosponding to each other notice. 
@@ -92,7 +92,7 @@ def send_to_s3(bucket, stub_base, path):
     path beneith `stub_base`.
     """
     relative_path = os.path.relpath(path, stub_base)
-    logger.info('sending {} to s3://{}/{}'.format(path, bucket.name, relative_path))
+    logger.info('sending {0} to s3://{1}/{2}'.format(path, bucket.name, relative_path))
 
     data = json.dumps(json.load(open(path, 'r')))
 
@@ -113,7 +113,7 @@ def send_to_server(api_base, stub_base, path):
     relative_path = os.path.relpath(path, stub_base)
     url = urlparse.urljoin(api_base, relative_path)
 
-    logger.info('sending {} to {}'.format(path, url))
+    logger.info('sending {0} to {1}'.format(path, url))
 
     data = json.dumps(json.load(open(path, 'r')))
     r = requests.post(url, data=data,
@@ -121,7 +121,7 @@ def send_to_server(api_base, stub_base, path):
 
     # regulations-core returns 204 on a successful POST
     if r.status_code != 204:
-        logger.error("error sending {}: {}".format(r.status_code, r.reason))
+        logger.error("error sending {0}: {1}".format(r.status_code, r.text))
 
 
 if __name__ == '__main__':
