@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import requests
+import requests.exceptions
 import sys
 import os
 import argparse
@@ -9,6 +10,7 @@ import json
 import urlparse
 import logging
 import boto
+import glob
 
 logging.basicConfig(
         format='%(asctime)s %(levelname)s: %(message)s', 
@@ -116,13 +118,22 @@ def send_to_server(api_base, stub_base, path):
     logger.info('sending {0} to {1}'.format(path, url))
 
     data = json.dumps(json.load(open(path, 'r')))
-    r = requests.post(url, data=data,
-                      headers={'content-type': 'application/json'})
+
+
+    try:
+        r = requests.post(url, data=data,
+                              headers={'content-type': 'application/json'})
+    except requests.exceptions.ConnectionError:
+        logger.error("error sending {0}: connection error".format(url))
+        return
+
 
     # regulations-core returns 204 on a successful POST
     if r.status_code != 204:
         logger.error("error sending {0}: {1}".format(r.status_code, r.text))
+        return
 
+    os.remove(path)
 
 if __name__ == '__main__':
 
